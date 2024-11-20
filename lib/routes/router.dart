@@ -1,3 +1,5 @@
+import 'package:espla/routes/shell.dart';
+import 'package:espla/screens/home/screen.dart';
 import 'package:espla/screens/landing/screen.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -9,7 +11,7 @@ GoRouter createRouter(
   List<NavigatorObserver> observers,
 ) =>
     GoRouter(
-      initialLocation: '/',
+      initialLocation: '/0x123/home',
       debugLogDiagnostics: kDebugMode,
       navigatorKey: rootNavigatorKey,
       observers: observers,
@@ -20,6 +22,19 @@ GoRouter createRouter(
             parentNavigatorKey: rootNavigatorKey,
             builder: (context, state) {
               return const LandingScreen();
-            })
+            }),
+        ShellRoute(
+          builder: (context, state, child) => RouterShell(
+            state: state,
+            child: child,
+          ),
+          routes: [
+            GoRoute(
+              name: 'Home',
+              path: '/:id/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        ),
       ],
     );
