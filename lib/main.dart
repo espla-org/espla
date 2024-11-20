@@ -2,10 +2,19 @@ import 'package:espla/routes/router.dart';
 import 'package:espla/services/db/db.dart';
 import 'package:espla/state/state.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:macos_window_utils/macos_window_utils.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await WindowManipulator.initialize();
+
+  if (defaultTargetPlatform == TargetPlatform.macOS) {
+    WindowManipulator.makeTitlebarTransparent();
+    WindowManipulator.enableFullSizeContentView();
+    WindowManipulator.hideTitle();
+  }
 
   MainDB().init('main');
 

@@ -46,6 +46,11 @@ class RouterShell extends StatelessWidget {
                   child: CustomScrollView(
                 scrollBehavior: const CupertinoScrollBehavior(),
                 slivers: [
+                  const SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 30,
+                    ),
+                  ),
                   SliverToBoxAdapter(
                     child: Container(
                       decoration: BoxDecoration(
