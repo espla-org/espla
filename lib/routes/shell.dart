@@ -159,6 +159,15 @@ class RouterShell extends StatelessWidget {
                       onPressed: (context, path) =>
                           handleNavigation(context, path),
                     ),
+                    Tab(
+                      name: 'Proposals',
+                      location: 'proposals',
+                      currentLocation: location,
+                      path: '/$id/proposals',
+                      icon: CupertinoIcons.square,
+                      onPressed: (context, path) =>
+                          handleNavigation(context, path),
+                    ),
                   ],
                 ),
               ),
