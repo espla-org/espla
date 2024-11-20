@@ -1,4 +1,5 @@
 import 'package:espla/routes/shell.dart';
+import 'package:espla/screens/home/assets/screen.dart';
 import 'package:espla/screens/home/screen.dart';
 import 'package:espla/screens/landing/screen.dart';
 import 'package:flutter/cupertino.dart';
@@ -32,7 +33,20 @@ GoRouter createRouter(
             GoRoute(
               name: 'Home',
               path: '/:id/home',
-              builder: (context, state) => const HomeScreen(),
+              pageBuilder: (context, state) => NoTransitionPage(
+                key: state.pageKey,
+                name: state.name,
+                child: const HomeScreen(),
+              ),
+            ),
+            GoRoute(
+              name: 'Assets',
+              path: '/:id/assets',
+              pageBuilder: (context, state) => NoTransitionPage(
+                key: state.pageKey,
+                name: state.name,
+                child: const AssetsScreen(),
+              ),
             ),
           ],
         ),
