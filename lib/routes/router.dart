@@ -13,7 +13,7 @@ GoRouter createRouter(
   List<NavigatorObserver> observers,
 ) =>
     GoRouter(
-      initialLocation: '/0x123/home',
+      initialLocation: '/0x0a26e479BaCe7D97c679b9b1de0fF606739Dafa2/home',
       debugLogDiagnostics: kDebugMode,
       navigatorKey: rootNavigatorKey,
       observers: observers,
@@ -46,7 +46,7 @@ GoRouter createRouter(
               pageBuilder: (context, state) => NoTransitionPage(
                 key: state.pageKey,
                 name: state.name,
-                child: const AssetsScreen(),
+                child: AssetsScreen(address: state.pathParameters['id']!),
               ),
             ),
             GoRoute(
