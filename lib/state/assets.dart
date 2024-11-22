@@ -1,22 +1,22 @@
 import 'package:espla/services/safe/safe.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:espla/services/safe/asset.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class AssetsState with ChangeNotifier {
-  final SafeService _safeService = SafeService(
-    baseURL: dotenv.get('SAFE_BASE_URL'),
-  );
+  final SafeService _safeService;
+
+  AssetsState({required String chainAddress})
+      : _safeService = SafeService(chainAddress: chainAddress);
 
   bool loading = false;
   List<SafeAsset> assets = [];
 
-  Future<void> fetchAssets(String address) async {
+  Future<void> fetchAssets() async {
     try {
       loading = true;
       notifyListeners();
 
-      final assets = await _safeService.getBalance(address: address);
+      final assets = await _safeService.getBalances();
 
       this.assets = assets.results;
       notifyListeners();

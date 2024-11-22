@@ -3,9 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
 class AssetsScreen extends StatefulWidget {
-  final String address;
-
-  const AssetsScreen({super.key, required this.address});
+  const AssetsScreen({super.key});
 
   @override
   State<AssetsScreen> createState() => _AssetsScreenState();
@@ -26,7 +24,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
   }
 
   void onLoad() {
-    _assetsState.fetchAssets(widget.address);
+    _assetsState.fetchAssets();
   }
 
   @override
@@ -60,7 +58,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
                         : const Icon(CupertinoIcons.money_dollar_circle),
                     title: Text(asset.token?.name ?? 'Unknown Token'),
                     subtitle: Text(
-                      '${(BigInt.parse(asset.balance) / BigInt.from(10).pow(asset.token?.decimals ?? 18)).toStringAsFixed(2)} ${asset.token?.symbol ?? 'POL'}',
+                      '${(BigInt.parse(asset.balance) / BigInt.from(10).pow(asset.token?.decimals ?? 18)).toStringAsFixed(2)} ${asset.token?.symbol ?? ''}',
                       style: const TextStyle(color: CupertinoColors.systemGrey),
                     ),
                     trailing: const CupertinoListTileChevron(),

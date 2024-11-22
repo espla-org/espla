@@ -16,9 +16,6 @@ Widget provideAppState(
         ChangeNotifierProvider(
           create: (_) => OrgState(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => AssetsState(),
-        ),
       ],
       builder: builder,
       child: child,

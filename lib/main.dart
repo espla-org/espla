@@ -1,5 +1,6 @@
 import 'package:espla/routes/router.dart';
 import 'package:espla/services/db/db.dart';
+import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/state.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -10,7 +11,7 @@ import 'package:macos_window_utils/macos_window_utils.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await dotenv.load(fileName: '.env');
+  // await dotenv.load(fileName: '.env');
 
   await WindowManipulator.initialize();
 
@@ -20,7 +21,8 @@ void main() async {
     WindowManipulator.hideTitle();
   }
 
-  MainDB().init('main');
+  await MainDB().init('main');
+  await PreferencesService().init(MainDB().preference);
 
   runApp(provideAppState(const MyApp()));
 }

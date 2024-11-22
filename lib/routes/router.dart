@@ -1,11 +1,14 @@
 import 'package:espla/routes/shell.dart';
 import 'package:espla/screens/home/assets/screen.dart';
+import 'package:espla/screens/home/discussions/screen.dart';
 import 'package:espla/screens/home/proposals/screen.dart';
 import 'package:espla/screens/home/screen.dart';
 import 'package:espla/screens/landing/screen.dart';
+import 'package:espla/state/assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 GoRouter createRouter(
   GlobalKey<NavigatorState> rootNavigatorKey,
@@ -13,7 +16,7 @@ GoRouter createRouter(
   List<NavigatorObserver> observers,
 ) =>
     GoRouter(
-      initialLocation: '/0x0a26e479BaCe7D97c679b9b1de0fF606739Dafa2/home',
+      initialLocation: '/',
       debugLogDiagnostics: kDebugMode,
       navigatorKey: rootNavigatorKey,
       observers: observers,
@@ -46,7 +49,12 @@ GoRouter createRouter(
               pageBuilder: (context, state) => NoTransitionPage(
                 key: state.pageKey,
                 name: state.name,
-                child: AssetsScreen(address: state.pathParameters['id']!),
+                child: ChangeNotifierProvider(
+                  create: (_) => AssetsState(
+                    chainAddress: state.pathParameters['id']!,
+                  ),
+                  child: const AssetsScreen(),
+                ),
               ),
             ),
             GoRoute(
@@ -56,6 +64,15 @@ GoRouter createRouter(
                 key: state.pageKey,
                 name: state.name,
                 child: const ProposalsScreen(),
+              ),
+            ),
+            GoRoute(
+              name: 'Discussions',
+              path: '/:id/discussions/:discussionId',
+              pageBuilder: (context, state) => NoTransitionPage(
+                key: state.pageKey,
+                name: state.name,
+                child: const DiscussionsScreen(),
               ),
             ),
           ],

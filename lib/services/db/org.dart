@@ -74,4 +74,9 @@ class OrgTable extends DBTable {
 
   @override
   Future<void> migrate(Database db, int oldVersion, int newVersion) async {}
+
+  Future<List<Org>> getAll() async {
+    final List<Map<String, dynamic>> maps = await db.query(name);
+    return List.generate(maps.length, (i) => Org.fromMap(maps[i]));
+  }
 }

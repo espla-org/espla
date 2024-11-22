@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:espla/services/db/org.dart';
+import 'package:espla/services/db/preference.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -87,25 +88,29 @@ class MainDB extends DBService {
 
   MainDB._internal();
 
-  late OrgTable orgTable;
+  late OrgTable org;
+  late PreferenceTable preference;
 
   // open a database, create tables and migrate data
   @override
   Future<Database> openDB(String path) async {
     final options = OpenDatabaseOptions(
       onConfigure: (db) async {
-        // instantiate a org table
-        orgTable = OrgTable(db);
+        // instantiate tables
+        org = OrgTable(db);
+        preference = PreferenceTable(db);
       },
       onCreate: (db, version) async {
         // create tables
-        await orgTable.create(db);
+        await org.create(db);
+        await preference.create(db);
 
         return;
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         // migrate data
-        await orgTable.migrate(db, oldVersion, newVersion);
+        await org.migrate(db, oldVersion, newVersion);
+        await preference.migrate(db, oldVersion, newVersion);
 
         return;
       },

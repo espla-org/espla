@@ -1,26 +1,40 @@
 import 'package:cupertino_sidebar/cupertino_sidebar.dart';
+import 'package:espla/services/db/org.dart';
+import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/org.dart';
 import 'package:espla/widgets/blurry_child.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-final List<Map<String, dynamic>> destinations = [
-  {
-    'name': 'Home',
-    'location': 'home',
-    'icon': CupertinoIcons.home,
-  },
-  {
-    'name': 'Assets',
-    'location': 'assets',
-    'icon': CupertinoIcons.circle,
-  },
-  {
-    'name': 'Proposals',
-    'location': 'proposals',
-    'icon': CupertinoIcons.square,
-  },
+class Destination {
+  final String name;
+  final String location;
+  final String icon;
+
+  Destination({
+    required this.name,
+    required this.location,
+    required this.icon,
+  });
+}
+
+final List<Destination> destinations = [
+  Destination(
+    name: 'Home',
+    location: 'home',
+    icon: '🏠',
+  ),
+  Destination(
+    name: 'Assets',
+    location: 'assets',
+    icon: '💰',
+  ),
+  Destination(
+    name: 'Proposals',
+    location: 'proposals',
+    icon: '🗣️',
+  ),
 ];
 
 class RouterShell extends StatefulWidget {
@@ -38,6 +52,8 @@ class RouterShell extends StatefulWidget {
 }
 
 class _RouterShellState extends State<RouterShell> {
+  final PreferencesService _preferences = PreferencesService();
+
   bool isExpanded = true;
 
   void handleCreateOrg(BuildContext context) {
@@ -46,10 +62,12 @@ class _RouterShellState extends State<RouterShell> {
 
   void handleSelectOrg(BuildContext context, String id) {
     GoRouter.of(context).go('/$id/home');
+    _preferences.setLastActiveOrgId(id);
   }
 
-  void handleNavigation(BuildContext context, String path) {
-    GoRouter.of(context).go(path);
+  void handleNavigation(
+      BuildContext context, String id, Destination destination) {
+    GoRouter.of(context).go('/$id/${destination.location}');
   }
 
   @override
@@ -63,11 +81,11 @@ class _RouterShellState extends State<RouterShell> {
 
     final orgs = context.watch<OrgState>().orgs;
 
-    final activeOrg = context.select(
-      (OrgState state) => state.orgs.firstWhere(
-        (org) => org.id == id,
-      ),
+    final activeOrgIndex = context.select(
+      (OrgState state) => state.orgs.indexWhere((org) => org.id == id),
     );
+
+    final activeOrg = orgs.isNotEmpty ? orgs[activeOrgIndex] : null;
 
     return CupertinoPageScaffold(
       key: Key(state.uri.toString()),
@@ -194,51 +212,86 @@ class _RouterShellState extends State<RouterShell> {
                     ],
                   ),
                 ),
-                CupertinoSidebarCollapsible(
-                  isExpanded: isExpanded,
-                  child: CupertinoSidebar(
-                    selectedIndex: destinations.indexWhere(
-                      (destination) => destination['location'] == location,
-                    ),
-                    onDestinationSelected: (value) {
-                      final destination = destinations[value];
-                      handleNavigation(
-                          context, '/$id/${destination['location']}');
-                    },
-                    navigationBar: SidebarNavigationBar(
-                      title: Text(activeOrg.name),
-                    ),
-                    children: destinations.map((destination) {
-                      return SidebarDestination(
-                        icon: Icon(destination['icon']),
-                        label: Text(destination['name']),
-                      );
-                    }).toList(),
-                  ),
-                ),
+                activeOrg != null
+                    ? CupertinoSidebarCollapsible(
+                        isExpanded: isExpanded,
+                        child: CupertinoSidebar(
+                          selectedIndex: destinations.indexWhere(
+                            (destination) => destination.location == location,
+                          ),
+                          onDestinationSelected: (value) {
+                            if (value > destinations.length - 1) {
+                              return;
+                            }
+
+                            final destination = destinations[value];
+                            handleNavigation(
+                              context,
+                              id ?? '',
+                              destination,
+                            );
+                          },
+                          navigationBar: SidebarNavigationBar(
+                            title: Text(activeOrg.name),
+                          ),
+                          children: [
+                            SizedBox(
+                              height: 50,
+                              child: Text(
+                                activeOrg.description,
+                                maxLines: 2,
+                              ),
+                            ),
+                            ...destinations.map(
+                              (destination) {
+                                return SidebarDestination(
+                                  icon: Text(destination.icon),
+                                  label: Text(destination.name),
+                                );
+                              },
+                            ),
+                            const SidebarSection(
+                              label: Text('Discussions'),
+                              children: [
+                                SidebarDestination(
+                                  icon: Text('🔔'),
+                                  label: Text('Announcements'),
+                                ),
+                                SidebarDestination(
+                                  icon: Text('💬'),
+                                  label: Text('General'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      )
+                    : const SizedBox.shrink(),
                 Expanded(
                   child: child,
                 ),
               ],
             ),
-            Positioned(
-              top: 0,
-              left: 60,
-              child: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10),
-                  child: CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    onPressed: () {
-                      setState(() {
-                        isExpanded = !isExpanded;
-                      });
-                    },
-                    child: const Icon(CupertinoIcons.sidebar_left),
-                  ),
-                ),
-              ),
-            ),
+            activeOrg != null
+                ? Positioned(
+                    top: 0,
+                    left: 60,
+                    child: SafeArea(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: CupertinoButton(
+                          padding: EdgeInsets.zero,
+                          onPressed: () {
+                            setState(() {
+                              isExpanded = !isExpanded;
+                            });
+                          },
+                          child: const Icon(CupertinoIcons.sidebar_left),
+                        ),
+                      ),
+                    ),
+                  )
+                : const SizedBox.shrink(),
           ],
         ),
       ),
