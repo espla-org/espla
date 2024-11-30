@@ -1,21 +1,40 @@
+import 'dart:convert';
+
 class SafeAsset {
-  final String? tokenAddress;
+  final String tokenAddress;
+  final DateTime? createdAt;
+  final DateTime? updatedAt;
+  final String? orgId;
   final TokenInfo? token;
   final String balance;
 
-  const SafeAsset({
-    this.tokenAddress,
+  SafeAsset({
+    this.tokenAddress = 'native',
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    this.orgId,
     this.token,
     required this.balance,
-  });
+  })  : createdAt = createdAt ?? DateTime.now(),
+        updatedAt = updatedAt ?? DateTime.now();
+
+  // For creating new DB entries
+  SafeAsset.create({
+    this.tokenAddress = 'native',
+    required this.orgId,
+    this.token,
+    required this.balance,
+  })  : createdAt = DateTime.now(),
+        updatedAt = DateTime.now();
 
   // Check if this asset is a native coin (e.g., ETH)
-  bool get isNativeCoin => tokenAddress == null && token == null;
+  bool get isNativeCoin => tokenAddress == 'native' && token == null;
 
   // Factory constructor to create from JSON
-  factory SafeAsset.fromJson(Map<String, dynamic> json) {
+  factory SafeAsset.fromJson(Map<String, dynamic> json, String chainAddress) {
     return SafeAsset(
-      tokenAddress: json['tokenAddress'],
+      tokenAddress: json['tokenAddress'] ?? 'native',
+      orgId: chainAddress,
       token: json['token'] != null ? TokenInfo.fromJson(json['token']) : null,
       balance: json['balance'],
     );
@@ -28,6 +47,58 @@ class SafeAsset {
       'token': token?.toJson(),
       'balance': balance,
     };
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'token_address': tokenAddress,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'org_id': orgId,
+      'token': token?.toMap(),
+      'balance': balance,
+    };
+  }
+
+  static SafeAsset fromMap(Map<String, dynamic> map, {String? chainAddress}) {
+    return SafeAsset(
+      tokenAddress: map['token_address'] ?? map['tokenAddress'] ?? 'native',
+      createdAt: map['created_at'] != null
+          ? DateTime.parse(map['created_at'])
+          : DateTime.now(),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'])
+          : DateTime.now(),
+      orgId: chainAddress ?? map['org_id'],
+      token: map['token'] != null ? TokenInfo.fromMap(map['token']) : null,
+      balance: map['balance'],
+    );
+  }
+
+  Map<String, dynamic> toDB() {
+    return {
+      'token_address': tokenAddress,
+      'created_at': createdAt?.toIso8601String(),
+      'updated_at': updatedAt?.toIso8601String(),
+      'org_id': orgId,
+      'token': token?.toJson(),
+      'balance': balance,
+    };
+  }
+
+  static SafeAsset fromDB(Map<String, dynamic> map) {
+    return SafeAsset(
+      tokenAddress: map['token_address'],
+      createdAt: map['created_at'] != null
+          ? DateTime.parse(map['created_at'])
+          : DateTime.now(),
+      updatedAt: map['updated_at'] != null
+          ? DateTime.parse(map['updated_at'])
+          : DateTime.now(),
+      orgId: map['org_id'],
+      token: map['token'] != null ? TokenInfo.fromJson(map['token']) : null,
+      balance: map['balance'],
+    );
   }
 }
 
@@ -45,17 +116,37 @@ class TokenInfo {
   });
 
   // Factory constructor to create from JSON
-  factory TokenInfo.fromJson(Map<String, dynamic> json) {
+  factory TokenInfo.fromJson(String json) {
+    final Map<String, dynamic> map = jsonDecode(json);
+
     return TokenInfo(
-      name: json['name'],
-      symbol: json['symbol'],
-      decimals: json['decimals'],
-      logoUri: json['logoUri'],
+      name: map['name'],
+      symbol: map['symbol'],
+      decimals: map['decimals'],
+      logoUri: map['logoUri'],
     );
   }
 
   // Convert to JSON
-  Map<String, dynamic> toJson() {
+  String toJson() {
+    return jsonEncode({
+      'name': name,
+      'symbol': symbol,
+      'decimals': decimals,
+      'logoUri': logoUri,
+    });
+  }
+
+  factory TokenInfo.fromMap(Map<String, dynamic> map) {
+    return TokenInfo(
+      name: map['name'],
+      symbol: map['symbol'],
+      decimals: map['decimals'],
+      logoUri: map['logoUri'],
+    );
+  }
+
+  Map<String, dynamic> toMap() {
     return {
       'name': name,
       'symbol': symbol,

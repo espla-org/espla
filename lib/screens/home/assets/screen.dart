@@ -35,7 +35,7 @@ class _AssetsScreenState extends State<AssetsScreen> {
     return CupertinoScrollbar(
       child: CustomScrollView(
         slivers: [
-          if (loading)
+          if (loading && assets.isEmpty)
             const SliverFillRemaining(
               child: Center(
                 child: CupertinoActivityIndicator(),

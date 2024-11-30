@@ -34,9 +34,11 @@ String getURLFromERC3770(String address) {
 
 class SafeService {
   final APIService api;
+  final String _chainAddress;
 
   SafeService({required String chainAddress})
-      : api = APIService(baseURL: getURLFromERC3770(chainAddress));
+      : api = APIService(baseURL: getURLFromERC3770(chainAddress)),
+        _chainAddress = chainAddress;
 
   Future<PaginatedResponse<SafeAsset>> getBalances({
     int offset = 0,
@@ -49,7 +51,7 @@ class SafeService {
 
     return PaginatedResponse.fromJson(
       response,
-      (e) => SafeAsset.fromJson(e),
+      (e) => SafeAsset.fromMap(e, chainAddress: _chainAddress),
     );
   }
 }
