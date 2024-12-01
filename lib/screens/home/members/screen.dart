@@ -1,4 +1,4 @@
-import 'package:espla/state/owners.dart';
+import 'package:espla/state/members.dart';
 import 'package:espla/utils/address_formatter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +12,7 @@ class MembersScreen extends StatefulWidget {
 
 class _MembersScreenState extends State<MembersScreen>
     with WidgetsBindingObserver {
-  late OwnersState _ownersState;
+  late MembersState _membersState;
 
   @override
   void initState() {
@@ -21,7 +21,7 @@ class _MembersScreenState extends State<MembersScreen>
     WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _ownersState = context.read<OwnersState>();
+      _membersState = context.read<MembersState>();
       onLoad();
     });
   }
@@ -43,11 +43,11 @@ class _MembersScreenState extends State<MembersScreen>
   }
 
   void onLoad() {
-    _ownersState.fetchOwners();
+    _membersState.fetchMembers();
   }
 
   Future<void> onRefresh() async {
-    await _ownersState.fetchOwners();
+    await _membersState.fetchMembers();
   }
 
   Widget _buildProfileImage(String? imageUrl) {
@@ -71,8 +71,8 @@ class _MembersScreenState extends State<MembersScreen>
 
   @override
   Widget build(BuildContext context) {
-    final owners = context.watch<OwnersState>().owners;
-    final loading = context.watch<OwnersState>().loading;
+    final members = context.watch<MembersState>().members;
+    final loading = context.watch<MembersState>().loading;
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
@@ -93,7 +93,7 @@ class _MembersScreenState extends State<MembersScreen>
                 height: 44,
               ),
             ),
-            if (loading && owners.isEmpty)
+            if (loading && members.isEmpty)
               const SliverFillRemaining(
                 child: Center(
                   child: CupertinoActivityIndicator(),
@@ -103,16 +103,16 @@ class _MembersScreenState extends State<MembersScreen>
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final owner = owners[index];
+                    final member = members[index];
                     return CupertinoListTile(
-                      leading: _buildProfileImage(owner.profile?.imageMedium),
+                      leading: _buildProfileImage(member.profile?.imageMedium),
                       title: Text(
-                        owner.profile?.name ??
-                            formatAddress(owner.address.hexEip55),
+                        member.profile?.name ??
+                            formatAddress(member.address.hexEip55),
                       ),
-                      subtitle: owner.profile != null
+                      subtitle: member.profile != null
                           ? Text(
-                              '@${owner.profile!.username}',
+                              '@${member.profile!.username}',
                               style: const TextStyle(
                                 color: CupertinoColors.systemGrey,
                               ),
@@ -124,7 +124,7 @@ class _MembersScreenState extends State<MembersScreen>
                       },
                     );
                   },
-                  childCount: owners.length,
+                  childCount: members.length,
                 ),
               ),
           ],

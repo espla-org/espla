@@ -32,11 +32,9 @@ GoRouter createRouter(
           builder: (context, state, child) => provideOrgState(
             context,
             state,
-            (assetsState, ownersState) => RouterShell(
+            RouterShell(
               key: Key(state.pathParameters['id']!),
               state: state,
-              assetsState: assetsState,
-              ownersState: ownersState,
               child: child,
             ),
           ),

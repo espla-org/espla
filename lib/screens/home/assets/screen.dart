@@ -54,9 +54,6 @@ class _AssetsScreenState extends State<AssetsScreen>
   Widget build(BuildContext context) {
     final assets = context.watch<AssetsState>().assets;
     final loading = context.watch<AssetsState>().loading;
-
-    print('assets: ${assets.length}');
-
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
         middle: const Text('Assets'),

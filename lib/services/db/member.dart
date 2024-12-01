@@ -3,14 +3,14 @@ import 'package:espla/services/profiles/profiles.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:web3dart/web3dart.dart';
 
-class Owner {
+class Member {
   final EthereumAddress address;
   final String orgId;
   final Profile? profile;
   final DateTime createdAt;
   final DateTime updatedAt;
 
-  Owner({
+  Member({
     required this.address,
     required this.orgId,
     this.profile,
@@ -18,7 +18,7 @@ class Owner {
     required this.updatedAt,
   });
 
-  Owner.create({
+  Member.create({
     required this.address,
     required this.orgId,
     this.profile,
@@ -35,8 +35,8 @@ class Owner {
     };
   }
 
-  static Owner fromDB(Map<String, dynamic> map) {
-    return Owner(
+  static Member fromDB(Map<String, dynamic> map) {
+    return Member(
       address: EthereumAddress.fromHex(map['address']),
       orgId: map['org_id'],
       profile: map['profile'] != null ? Profile.fromJson(map['profile']) : null,
@@ -46,11 +46,11 @@ class Owner {
   }
 }
 
-class OwnerTable extends DBTable {
-  OwnerTable(super.db);
+class MemberTable extends DBTable {
+  MemberTable(super.db);
 
   @override
-  String get name => 'owner';
+  String get name => 'member';
 
   @override
   String get createQuery => '''
@@ -65,6 +65,8 @@ class OwnerTable extends DBTable {
     )
   ''';
 
+  // Rest of the class implementation remains the same, just rename methods
+  // from owner to member
   @override
   Future<void> create(Database db) async {
     await db.execute(createQuery);
@@ -91,10 +93,10 @@ class OwnerTable extends DBTable {
     }
   }
 
-  Future<List<Owner>> getByOrgId(String orgId) async {
+  Future<List<Member>> getByOrgId(String orgId) async {
     final List<Map<String, dynamic>> maps =
         await db.query(name, where: 'org_id = ?', whereArgs: [orgId]);
-    return List.generate(maps.length, (i) => Owner.fromDB(maps[i]));
+    return List.generate(maps.length, (i) => Member.fromDB(maps[i]));
   }
 
   Future<int> countByOrgId(String orgId) async {
@@ -105,17 +107,17 @@ class OwnerTable extends DBTable {
     return result.first['count'] as int;
   }
 
-  Future<void> upsertOwner(Owner owner) async {
+  Future<void> upsertMember(Member member) async {
     await db.insert(
       name,
-      owner.toDB(),
+      member.toDB(),
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
   }
 
-  Future<void> upsertOwners(List<Owner> owners) async {
-    for (final owner in owners) {
-      await upsertOwner(owner);
+  Future<void> upsertMembers(List<Member> members) async {
+    for (final member in members) {
+      await upsertMember(member);
     }
   }
 

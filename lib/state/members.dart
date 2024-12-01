@@ -1,21 +1,21 @@
 import 'package:espla/services/db/db.dart';
-import 'package:espla/services/db/owner.dart';
+import 'package:espla/services/db/member.dart';
 import 'package:espla/services/safe/safe.dart';
 import 'package:flutter/cupertino.dart';
 
-class OwnersState with ChangeNotifier {
+class MembersState with ChangeNotifier {
   final SafeService _safeService;
-  final OwnerTable _owner = MainDB().owner;
+  final MemberTable _member = MainDB().member;
 
   final String _orgId;
 
-  OwnersState({required String chainAddress})
+  MembersState({required String chainAddress})
       : _safeService = SafeService(chainAddress: chainAddress),
         _orgId = chainAddress;
 
   bool loading = false;
-  List<Owner> owners = [];
-  int ownersCount = 0;
+  List<Member> members = [];
+  int membersCount = 0;
 
   bool _mounted = true;
 
@@ -31,30 +31,30 @@ class OwnersState with ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> fetchOwners() async {
+  Future<void> fetchMembers() async {
     try {
       loading = true;
       safeNotifyListeners();
 
-      final localOwners = await _owner.getByOrgId(_orgId);
+      final localMembers = await _member.getByOrgId(_orgId);
 
-      this.owners = localOwners;
-      ownersCount = localOwners.length;
+      this.members = localMembers;
+      membersCount = localMembers.length;
       safeNotifyListeners();
 
       final safeOwners = await _safeService.getOwners();
 
-      List<Owner> owners = [];
+      List<Member> members = [];
 
-      for (final owner in safeOwners) {
-        owners.add(Owner.create(address: owner, orgId: _orgId));
+      for (final member in safeOwners) {
+        members.add(Member.create(address: member, orgId: _orgId));
       }
 
-      this.owners = owners;
-      ownersCount = owners.length;
+      this.members = members;
+      membersCount = members.length;
       safeNotifyListeners();
 
-      await _owner.upsertOwners(owners);
+      await _member.upsertMembers(members);
     } catch (_) {
     } finally {
       loading = false;

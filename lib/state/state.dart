@@ -1,7 +1,6 @@
-import 'package:espla/routes/shell.dart';
 import 'package:espla/state/app.dart';
 import 'package:espla/state/assets.dart';
-import 'package:espla/state/owners.dart';
+import 'package:espla/state/members.dart';
 import 'package:espla/state/orgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
@@ -27,24 +26,22 @@ Widget provideAppState(
 Widget provideOrgState(
   BuildContext context,
   GoRouterState state,
-  Widget Function(AssetsState, OwnersState) builder,
+  Widget child,
 ) {
   final orgId = state.pathParameters['id']!;
-  final assetsState = AssetsState(chainAddress: orgId);
-  final ownersState = OwnersState(chainAddress: orgId);
 
   return MultiProvider(
     key: Key('org-$orgId'),
     providers: [
       ChangeNotifierProvider(
         key: Key('assets-$orgId'),
-        create: (_) => assetsState,
+        create: (_) => AssetsState(chainAddress: orgId),
       ),
       ChangeNotifierProvider(
-        key: Key('owners-$orgId'),
-        create: (_) => ownersState,
+        key: Key('members-$orgId'),
+        create: (_) => MembersState(chainAddress: orgId),
       ),
     ],
-    builder: (_, __) => builder(assetsState, ownersState),
+    child: child,
   );
 }

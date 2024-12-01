@@ -1,7 +1,7 @@
 import 'package:cupertino_sidebar/cupertino_sidebar.dart';
 import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/assets.dart';
-import 'package:espla/state/owners.dart';
+import 'package:espla/state/members.dart';
 import 'package:espla/state/orgs.dart';
 import 'package:espla/widgets/blurry_child.dart';
 import 'package:espla/widgets/image_or_svg.dart';
@@ -24,15 +24,11 @@ class Destination {
 class RouterShell extends StatefulWidget {
   final Widget? child;
   final GoRouterState state;
-  final AssetsState assetsState;
-  final OwnersState ownersState;
 
   const RouterShell({
     super.key,
     this.child,
     required this.state,
-    required this.assetsState,
-    required this.ownersState,
   });
 
   @override
@@ -41,6 +37,8 @@ class RouterShell extends StatefulWidget {
 
 class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   final PreferencesService _preferences = PreferencesService();
+  late AssetsState _assetsState;
+  late MembersState _membersState;
 
   bool isExpanded = true;
 
@@ -81,8 +79,11 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   }
 
   void onLoad() {
-    widget.assetsState.fetchAssets();
-    widget.ownersState.fetchOwners();
+    _assetsState = context.read<AssetsState>();
+    _membersState = context.read<MembersState>();
+
+    _assetsState.fetchAssets();
+    _membersState.fetchMembers();
   }
 
   void handleCreateOrg(BuildContext context) {
@@ -110,7 +111,7 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
 
     final orgs = context.watch<OrgsState>().orgs;
 
-    final ownerCount = context.watch<OwnersState>().ownersCount;
+    final memberCount = context.watch<MembersState>().membersCount;
     final assetsCount = context.watch<AssetsState>().assetsCount;
 
     final activeOrgIndex = context.select(
@@ -126,7 +127,7 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
         icon: '🏠',
       ),
       Destination(
-        name: ownerCount > 0 ? 'Members ($ownerCount)' : 'Members',
+        name: memberCount > 0 ? 'Members ($memberCount)' : 'Members',
         location: 'members',
         icon: '👥',
       ),
