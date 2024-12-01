@@ -1,17 +1,18 @@
-import 'package:espla/state/assets.dart';
+import 'package:espla/state/owners.dart';
+import 'package:espla/utils/address_formatter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
-class AssetsScreen extends StatefulWidget {
-  const AssetsScreen({super.key});
+class MembersScreen extends StatefulWidget {
+  const MembersScreen({super.key});
 
   @override
-  State<AssetsScreen> createState() => _AssetsScreenState();
+  State<MembersScreen> createState() => _MembersScreenState();
 }
 
-class _AssetsScreenState extends State<AssetsScreen>
+class _MembersScreenState extends State<MembersScreen>
     with WidgetsBindingObserver {
-  late AssetsState _assetsState;
+  late OwnersState _ownersState;
 
   @override
   void initState() {
@@ -20,8 +21,7 @@ class _AssetsScreenState extends State<AssetsScreen>
     WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _assetsState = context.read<AssetsState>();
-
+      _ownersState = context.read<OwnersState>();
       onLoad();
     });
   }
@@ -43,23 +43,40 @@ class _AssetsScreenState extends State<AssetsScreen>
   }
 
   void onLoad() {
-    _assetsState.fetchAssets();
+    _ownersState.fetchOwners();
   }
 
   Future<void> onRefresh() async {
-    await _assetsState.fetchAssets();
+    await _ownersState.fetchOwners();
+  }
+
+  Widget _buildProfileImage(String? imageUrl) {
+    if (imageUrl != null) {
+      return Image.network(
+        imageUrl,
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => const Text(
+          '👤',
+          style: TextStyle(fontSize: 32),
+        ),
+      );
+    }
+    return const Text(
+      '👤',
+      style: TextStyle(fontSize: 32),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-    final assets = context.watch<AssetsState>().assets;
-    final loading = context.watch<AssetsState>().loading;
-
-    print('assets: ${assets.length}');
+    final owners = context.watch<OwnersState>().owners;
+    final loading = context.watch<OwnersState>().loading;
 
     return CupertinoPageScaffold(
       navigationBar: CupertinoNavigationBar(
-        middle: const Text('Assets'),
+        middle: const Text('Members'),
         trailing: CupertinoButton(
           onPressed: onRefresh,
           child: const Icon(CupertinoIcons.refresh, size: 16),
@@ -76,7 +93,7 @@ class _AssetsScreenState extends State<AssetsScreen>
                 height: 44,
               ),
             ),
-            if (loading && assets.isEmpty)
+            if (loading && owners.isEmpty)
               const SliverFillRemaining(
                 child: Center(
                   child: CupertinoActivityIndicator(),
@@ -86,31 +103,28 @@ class _AssetsScreenState extends State<AssetsScreen>
               SliverList(
                 delegate: SliverChildBuilderDelegate(
                   (context, index) {
-                    final asset = assets[index];
+                    final owner = owners[index];
                     return CupertinoListTile(
-                      leading: asset.token?.logoUri != null
-                          ? Image.network(
-                              asset.token!.logoUri!,
-                              width: 32,
-                              height: 32,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(
-                                      CupertinoIcons.money_dollar_circle),
-                            )
-                          : const Icon(CupertinoIcons.money_dollar_circle),
-                      title: Text(asset.token?.name ?? 'Unknown Token'),
-                      subtitle: Text(
-                        '${(BigInt.parse(asset.balance) / BigInt.from(10).pow(asset.token?.decimals ?? 18)).toStringAsFixed(2)} ${asset.token?.symbol ?? ''}',
-                        style:
-                            const TextStyle(color: CupertinoColors.systemGrey),
+                      leading: _buildProfileImage(owner.profile?.imageMedium),
+                      title: Text(
+                        owner.profile?.name ??
+                            formatAddress(owner.address.hexEip55),
                       ),
+                      subtitle: owner.profile != null
+                          ? Text(
+                              '@${owner.profile!.username}',
+                              style: const TextStyle(
+                                color: CupertinoColors.systemGrey,
+                              ),
+                            )
+                          : null,
                       trailing: const CupertinoListTileChevron(),
                       onTap: () {
-                        // Handle asset tap
+                        // Handle owner tap
                       },
                     );
                   },
-                  childCount: assets.length,
+                  childCount: owners.length,
                 ),
               ),
           ],

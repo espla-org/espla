@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:espla/services/db/org.dart';
 import 'package:espla/services/db/preference.dart';
 import 'package:espla/services/db/asset.dart';
+import 'package:espla/services/db/owner.dart';
 import 'package:path/path.dart';
 import 'package:sqflite_common/sqflite.dart';
 import 'package:sqflite_common_ffi/sqflite_ffi.dart';
@@ -92,6 +93,7 @@ class MainDB extends DBService {
   late OrgTable org;
   late PreferenceTable preference;
   late final AssetTable asset;
+  late final OwnerTable owner;
 
   // open a database, create tables and migrate data
   @override
@@ -102,12 +104,14 @@ class MainDB extends DBService {
         org = OrgTable(db);
         preference = PreferenceTable(db);
         asset = AssetTable(db);
+        owner = OwnerTable(db);
       },
       onCreate: (db, version) async {
         // create tables
         await org.create(db);
         await preference.create(db);
         await asset.create(db);
+        await owner.create(db);
 
         return;
       },
@@ -116,10 +120,11 @@ class MainDB extends DBService {
         await org.migrate(db, oldVersion, newVersion);
         await preference.migrate(db, oldVersion, newVersion);
         await asset.migrate(db, oldVersion, newVersion);
+        await owner.migrate(db, oldVersion, newVersion);
 
         return;
       },
-      version: 2,
+      version: 3,
     );
 
     final db = await databaseFactory.openDatabase(

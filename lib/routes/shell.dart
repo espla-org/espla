@@ -1,7 +1,7 @@
 import 'package:cupertino_sidebar/cupertino_sidebar.dart';
-import 'package:espla/services/db/org.dart';
 import 'package:espla/services/preferences/preferences.dart';
-import 'package:espla/state/org.dart';
+import 'package:espla/state/assets.dart';
+import 'package:espla/state/owners.dart';
 import 'package:espla/state/orgs.dart';
 import 'package:espla/widgets/blurry_child.dart';
 import 'package:espla/widgets/image_or_svg.dart';
@@ -22,13 +22,17 @@ class Destination {
 }
 
 class RouterShell extends StatefulWidget {
-  final Widget child;
+  final Widget? child;
   final GoRouterState state;
+  final AssetsState assetsState;
+  final OwnersState ownersState;
 
   const RouterShell({
     super.key,
-    required this.child,
+    this.child,
     required this.state,
+    required this.assetsState,
+    required this.ownersState,
   });
 
   @override
@@ -37,7 +41,6 @@ class RouterShell extends StatefulWidget {
 
 class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   final PreferencesService _preferences = PreferencesService();
-  late OrgState _orgState;
 
   bool isExpanded = true;
 
@@ -48,10 +51,17 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _orgState = context.read<OrgState>();
-
       onLoad();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant RouterShell oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.key != widget.key) {
+      onLoad();
+    }
   }
 
   @override
@@ -71,7 +81,8 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   }
 
   void onLoad() {
-    _orgState.fetchAssetsCount();
+    widget.assetsState.fetchAssets();
+    widget.ownersState.fetchOwners();
   }
 
   void handleCreateOrg(BuildContext context) {
@@ -99,7 +110,8 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
 
     final orgs = context.watch<OrgsState>().orgs;
 
-    final assetsCount = context.watch<OrgState>().assetsCount;
+    final ownerCount = context.watch<OwnersState>().ownersCount;
+    final assetsCount = context.watch<AssetsState>().assetsCount;
 
     final activeOrgIndex = context.select(
       (OrgsState state) => state.orgs.indexWhere((org) => org.id == id),
@@ -112,6 +124,11 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
         name: 'Home',
         location: 'home',
         icon: '🏠',
+      ),
+      Destination(
+        name: ownerCount > 0 ? 'Members ($ownerCount)' : 'Members',
+        location: 'members',
+        icon: '👥',
       ),
       Destination(
         name: assetsCount > 0 ? 'Assets ($assetsCount)' : 'Assets',
@@ -302,9 +319,10 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
                         ),
                       )
                     : const SizedBox.shrink(),
-                Expanded(
-                  child: child,
-                ),
+                if (child != null)
+                  Expanded(
+                    child: child,
+                  ),
               ],
             ),
             activeOrg != null

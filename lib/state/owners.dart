@@ -1,22 +1,21 @@
-import 'package:espla/services/db/asset.dart';
 import 'package:espla/services/db/db.dart';
+import 'package:espla/services/db/owner.dart';
 import 'package:espla/services/safe/safe.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:espla/services/safe/asset.dart';
 
-class AssetsState with ChangeNotifier {
+class OwnersState with ChangeNotifier {
   final SafeService _safeService;
-  final AssetTable _asset = MainDB().asset;
+  final OwnerTable _owner = MainDB().owner;
 
   final String _orgId;
 
-  AssetsState({required String chainAddress})
+  OwnersState({required String chainAddress})
       : _safeService = SafeService(chainAddress: chainAddress),
         _orgId = chainAddress;
 
   bool loading = false;
-  List<SafeAsset> assets = [];
-  int assetsCount = 0;
+  List<Owner> owners = [];
+  int ownersCount = 0;
 
   bool _mounted = true;
 
@@ -32,24 +31,30 @@ class AssetsState with ChangeNotifier {
     super.dispose();
   }
 
-  Future<void> fetchAssets() async {
+  Future<void> fetchOwners() async {
     try {
       loading = true;
       safeNotifyListeners();
 
-      final localAssets = await _asset.getByOrgId(_orgId);
+      final localOwners = await _owner.getByOrgId(_orgId);
 
-      this.assets = localAssets;
-      assetsCount = localAssets.length;
+      this.owners = localOwners;
+      ownersCount = localOwners.length;
       safeNotifyListeners();
 
-      final assets = await _safeService.getBalances();
+      final safeOwners = await _safeService.getOwners();
 
-      this.assets = assets.results;
-      assetsCount = assets.results.length;
+      List<Owner> owners = [];
+
+      for (final owner in safeOwners) {
+        owners.add(Owner.create(address: owner, orgId: _orgId));
+      }
+
+      this.owners = owners;
+      ownersCount = owners.length;
       safeNotifyListeners();
 
-      await _asset.upsertAssets(assets.results);
+      await _owner.upsertOwners(owners);
     } catch (_) {
     } finally {
       loading = false;
