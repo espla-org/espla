@@ -20,4 +20,12 @@ class PreferencesService {
   Future setLastActiveOrgId(String id) async {
     await _preferences.set('lastActiveOrgId', id);
   }
+
+  Future<String?> getOrgThreshold(String id) async {
+    return _preferences.get('orgThreshold-$id');
+  }
+
+  Future setOrgThreshold(String id, String threshold) async {
+    await _preferences.set('orgThreshold-$id', threshold);
+  }
 }

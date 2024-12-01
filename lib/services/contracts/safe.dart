@@ -32,4 +32,13 @@ class Safe {
         .map((addr) => addr as EthereumAddress)
         .toList();
   }
+
+  Future<BigInt> getThreshold() async {
+    final function = rcontract.function('getThreshold');
+
+    final result =
+        await client.call(contract: rcontract, function: function, params: []);
+
+    return result[0] as BigInt;
+  }
 }

@@ -3,6 +3,8 @@ import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/assets.dart';
 import 'package:espla/state/members.dart';
 import 'package:espla/state/orgs.dart';
+import 'package:espla/state/voting.dart';
+import 'package:espla/widgets/badge.dart';
 import 'package:espla/widgets/blurry_child.dart';
 import 'package:espla/widgets/image_or_svg.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,7 +12,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 class Destination {
-  final String name;
+  final Widget name;
   final String location;
   final String icon;
 
@@ -39,6 +41,7 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   final PreferencesService _preferences = PreferencesService();
   late AssetsState _assetsState;
   late MembersState _membersState;
+  late VotingState _votingState;
 
   bool isExpanded = true;
 
@@ -81,9 +84,11 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   void onLoad() {
     _assetsState = context.read<AssetsState>();
     _membersState = context.read<MembersState>();
+    _votingState = context.read<VotingState>();
 
     _assetsState.fetchAssets();
     _membersState.fetchMembers();
+    _votingState.getThreshold();
   }
 
   void handleCreateOrg(BuildContext context) {
@@ -114,6 +119,10 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
     final memberCount = context.watch<MembersState>().membersCount;
     final assetsCount = context.watch<AssetsState>().assetsCount;
 
+    final (votingThreshold, threshold) =
+        context.select<VotingState, (VotingThreshold?, double?)>(
+            selectVotingThreshold(memberCount));
+
     final activeOrgIndex = context.select(
       (OrgsState state) => state.orgs.indexWhere((org) => org.id == id),
     );
@@ -122,22 +131,45 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
 
     final List<Destination> destinations = [
       Destination(
-        name: 'Home',
+        name: const Text('Home'),
         location: 'home',
         icon: '🏠',
       ),
       Destination(
-        name: memberCount > 0 ? 'Members ($memberCount)' : 'Members',
+        name: memberCount > 0
+            ? Text('Members ($memberCount)')
+            : const Text('Members'),
         location: 'members',
         icon: '👥',
       ),
       Destination(
-        name: assetsCount > 0 ? 'Assets ($assetsCount)' : 'Assets',
+        name: assetsCount > 0
+            ? Text('Assets ($assetsCount)')
+            : const Text('Assets'),
         location: 'assets',
         icon: '💰',
       ),
       Destination(
-        name: 'Proposals',
+        name: votingThreshold != null
+            ? Row(
+                children: [
+                  const Text('Proposals'),
+                  const SizedBox(width: 8),
+                  CupertinoCustomBadge(label: votingThreshold.name),
+                  if (votingThreshold == VotingThreshold.custom)
+                    const SizedBox(
+                      width: 8,
+                    ),
+                  if (votingThreshold == VotingThreshold.custom)
+                    Text(
+                      '(${threshold?.toStringAsFixed(2)}%)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                      ),
+                    ),
+                ],
+              )
+            : const Text('Proposals'),
         location: 'proposals',
         icon: '🗣️',
       ),
@@ -299,7 +331,7 @@ class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
                               (destination) {
                                 return SidebarDestination(
                                   icon: Text(destination.icon),
-                                  label: Text(destination.name),
+                                  label: destination.name,
                                 );
                               },
                             ),

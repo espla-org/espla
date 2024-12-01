@@ -118,4 +118,8 @@ class SafeService {
   Future<List<EthereumAddress>> getOwners() async {
     return await _safe.getOwners();
   }
+
+  Future<BigInt> getThreshold() async {
+    return await _safe.getThreshold();
+  }
 }
