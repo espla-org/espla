@@ -1,5 +1,5 @@
 import 'package:espla/services/preferences/preferences.dart';
-import 'package:espla/state/org.dart';
+import 'package:espla/state/orgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -13,14 +13,14 @@ class LandingScreen extends StatefulWidget {
 
 class _LandingScreenState extends State<LandingScreen> {
   final PreferencesService _preferences = PreferencesService();
-  late OrgState _orgState;
+  late OrgsState _orgState;
 
   @override
   void initState() {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _orgState = context.read<OrgState>();
+      _orgState = context.read<OrgsState>();
 
       onLoad();
     });

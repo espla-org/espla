@@ -1,22 +1,18 @@
+import 'package:espla/services/db/asset.dart';
 import 'package:espla/services/db/db.dart';
-import 'package:espla/services/db/org.dart';
 import 'package:flutter/cupertino.dart';
 
 class OrgState with ChangeNotifier {
-  final MainDB _db = MainDB();
+  final AssetTable _asset = MainDB().asset;
 
-  List<Org> orgs = [];
+  final String _orgId;
 
-  Future<List<Org>> fetchOrgs() async {
-    try {
-      orgs = await _db.org.getAll();
-      notifyListeners();
+  OrgState({required String orgId}) : _orgId = orgId;
 
-      return orgs;
-    } catch (e) {
-      //
-    }
+  int assetsCount = 0;
 
-    return [];
+  Future<void> fetchAssetsCount() async {
+    assetsCount = await _asset.countByOrgId(_orgId);
+    notifyListeners();
   }
 }

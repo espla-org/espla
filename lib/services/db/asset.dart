@@ -54,6 +54,14 @@ class AssetTable extends DBTable {
     return List.generate(maps.length, (i) => SafeAsset.fromDB(maps[i]));
   }
 
+  Future<int> countByOrgId(String orgId) async {
+    final result = await db.rawQuery(
+      'SELECT COUNT(*) as count FROM $name WHERE org_id = ?',
+      [orgId],
+    );
+    return result.first['count'] as int;
+  }
+
   Future<void> upsertAsset(SafeAsset asset) async {
     await db.insert(
       name,

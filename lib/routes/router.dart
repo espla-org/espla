@@ -5,6 +5,8 @@ import 'package:espla/screens/home/proposals/screen.dart';
 import 'package:espla/screens/home/screen.dart';
 import 'package:espla/screens/landing/screen.dart';
 import 'package:espla/state/assets.dart';
+import 'package:espla/state/org.dart';
+import 'package:espla/state/orgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
@@ -29,10 +31,18 @@ GoRouter createRouter(
               return const LandingScreen();
             }),
         ShellRoute(
-          builder: (context, state, child) => RouterShell(
-            state: state,
-            child: child,
-          ),
+          builder: (context, state, child) {
+            final orgId = state.pathParameters['id']!;
+
+            return ChangeNotifierProvider(
+              key: Key(orgId),
+              create: (_) => OrgState(orgId: orgId),
+              child: RouterShell(
+                state: state,
+                child: child,
+              ),
+            );
+          },
           routes: [
             GoRoute(
               name: 'Home',

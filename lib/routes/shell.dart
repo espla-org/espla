@@ -2,6 +2,7 @@ import 'package:cupertino_sidebar/cupertino_sidebar.dart';
 import 'package:espla/services/db/org.dart';
 import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/org.dart';
+import 'package:espla/state/orgs.dart';
 import 'package:espla/widgets/blurry_child.dart';
 import 'package:espla/widgets/image_or_svg.dart';
 import 'package:flutter/cupertino.dart';
@@ -20,24 +21,6 @@ class Destination {
   });
 }
 
-final List<Destination> destinations = [
-  Destination(
-    name: 'Home',
-    location: 'home',
-    icon: '🏠',
-  ),
-  Destination(
-    name: 'Assets',
-    location: 'assets',
-    icon: '💰',
-  ),
-  Destination(
-    name: 'Proposals',
-    location: 'proposals',
-    icon: '🗣️',
-  ),
-];
-
 class RouterShell extends StatefulWidget {
   final Widget child;
   final GoRouterState state;
@@ -52,10 +35,44 @@ class RouterShell extends StatefulWidget {
   State<RouterShell> createState() => _RouterShellState();
 }
 
-class _RouterShellState extends State<RouterShell> {
+class _RouterShellState extends State<RouterShell> with WidgetsBindingObserver {
   final PreferencesService _preferences = PreferencesService();
+  late OrgState _orgState;
 
   bool isExpanded = true;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addObserver(this);
+
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _orgState = context.read<OrgState>();
+
+      onLoad();
+    });
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        onLoad();
+        break;
+      default:
+    }
+  }
+
+  void onLoad() {
+    _orgState.fetchAssetsCount();
+  }
 
   void handleCreateOrg(BuildContext context) {
     print('create org');
@@ -80,13 +97,33 @@ class _RouterShellState extends State<RouterShell> {
     final parts = state.uri.toString().split('/');
     final location = parts.length > 2 ? parts[2] : '/';
 
-    final orgs = context.watch<OrgState>().orgs;
+    final orgs = context.watch<OrgsState>().orgs;
+
+    final assetsCount = context.watch<OrgState>().assetsCount;
 
     final activeOrgIndex = context.select(
-      (OrgState state) => state.orgs.indexWhere((org) => org.id == id),
+      (OrgsState state) => state.orgs.indexWhere((org) => org.id == id),
     );
 
     final activeOrg = orgs.isNotEmpty ? orgs[activeOrgIndex] : null;
+
+    final List<Destination> destinations = [
+      Destination(
+        name: 'Home',
+        location: 'home',
+        icon: '🏠',
+      ),
+      Destination(
+        name: assetsCount > 0 ? 'Assets ($assetsCount)' : 'Assets',
+        location: 'assets',
+        icon: '💰',
+      ),
+      Destination(
+        name: 'Proposals',
+        location: 'proposals',
+        icon: '🗣️',
+      ),
+    ];
 
     return CupertinoPageScaffold(
       key: Key(state.uri.toString()),

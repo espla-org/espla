@@ -1,6 +1,6 @@
 import 'package:espla/state/app.dart';
 import 'package:espla/state/assets.dart';
-import 'package:espla/state/org.dart';
+import 'package:espla/state/orgs.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
@@ -14,7 +14,7 @@ Widget provideAppState(
           create: (_) => AppState(),
         ),
         ChangeNotifierProvider(
-          create: (_) => OrgState(),
+          create: (_) => OrgsState(),
         ),
       ],
       builder: builder,
