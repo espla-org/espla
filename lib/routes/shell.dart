@@ -3,6 +3,7 @@ import 'package:espla/services/db/org.dart';
 import 'package:espla/services/preferences/preferences.dart';
 import 'package:espla/state/org.dart';
 import 'package:espla/widgets/blurry_child.dart';
+import 'package:espla/widgets/image_or_svg.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -179,16 +180,13 @@ class _RouterShellState extends State<RouterShell> {
                                           width: 2,
                                           color: CupertinoColors.systemCyan,
                                         ),
+                                        color: CupertinoColors.white,
                                       ),
                                       child: ClipRRect(
                                         borderRadius: BorderRadius.circular(25),
-                                        child: Image.network(
-                                          org.image,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stack) => Text(
-                                            org.name.substring(0, 1),
-                                          ),
+                                        child: ImageOrSvg(
+                                          image: org.image,
+                                          fit: BoxFit.contain,
                                         ),
                                       ),
                                     ),
